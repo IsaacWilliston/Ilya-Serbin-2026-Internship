@@ -1,0 +1,6 @@
+@SeatsReservationDotNet_HostAddress = http://localhost:5267
+
+GET {{SeatsReservationDotNet_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
