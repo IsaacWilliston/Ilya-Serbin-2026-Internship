@@ -5,8 +5,10 @@ using SeatsReservationDotNet.Entities;
 
 namespace SeatsReservationDotNet.Services;
 
+/// <inheritdoc cref="ISessionService"/>
 public class SessionService(AppDbContext context) : ISessionService
 {
+    /// <inheritdoc/>
     public async Task<GetSessionDto> CreateSessionAsync(SaveSessionDto dto)
     {
         var entity = new SessionEntity
@@ -24,6 +26,7 @@ public class SessionService(AppDbContext context) : ISessionService
         return MapToDto(entity);
     }
 
+    /// <inheritdoc/>
     public async Task<PagedResult<GetSessionDto>> GetAllSessionsAsync(int page, int size)
     {
         var query = context.Sessions.AsNoTracking();
@@ -37,6 +40,7 @@ public class SessionService(AppDbContext context) : ISessionService
         return new PagedResult<GetSessionDto>(items, total, page, size);
     }
 
+    /// <inheritdoc/>
     public async Task<GetSessionDto> GetSessionAsync(long id)
     {
         var entity = await context.Sessions.AsNoTracking().FirstOrDefaultAsync(s => s.Id == id)
@@ -44,6 +48,7 @@ public class SessionService(AppDbContext context) : ISessionService
         return MapToDto(entity);
     }
 
+    /// <inheritdoc/>
     public async Task<GetSessionDto> UpdateSessionAsync(long id, SaveSessionDto dto)
     {
         var entity = await context.Sessions.FindAsync(id)
@@ -57,6 +62,7 @@ public class SessionService(AppDbContext context) : ISessionService
         return MapToDto(entity);
     }
 
+    /// <inheritdoc/>
     public async Task DeleteSessionAsync(long id)
     {
         var entity = await context.Sessions.FindAsync(id)

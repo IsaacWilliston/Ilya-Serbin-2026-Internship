@@ -1,3 +1,14 @@
 namespace SeatsReservationDotNet.Enums;
 
-public enum MovieLang { ENGLISH, RUSSIAN, UZBEK }
+/// <summary>Audio language of a screening.</summary>
+public enum MovieLang
+{
+    /// <summary>English audio.</summary>
+    ENGLISH,
+
+    /// <summary>Russian audio.</summary>
+    RUSSIAN,
+
+    /// <summary>Uzbek audio.</summary>
+    UZBEK
+}

@@ -3,17 +3,37 @@ using SeatsReservationDotNet.Entities;
 
 namespace SeatsReservationDotNet.Data;
 
+/// <summary>
+/// Entity Framework Core database context for the cinema reservation schema.
+/// All tables are mapped to the <c>base_schema</c> PostgreSQL schema.
+/// </summary>
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
+    /// <summary>Cinema venues.</summary>
     public DbSet<CinemaEntity> Cinemas { get; set; }
+
+    /// <summary>Screening halls within cinemas.</summary>
     public DbSet<HallEntity> Halls { get; set; }
+
+    /// <summary>Movies available for screening.</summary>
     public DbSet<MovieEntity> Movies { get; set; }
+
+    /// <summary>Movie-to-genre join records.</summary>
     public DbSet<MovieGenre> MovieGenres { get; set; }
+
+    /// <summary>Seat pricing tiers (VIP, standard, economy).</summary>
     public DbSet<PriceCategoryEntity> PriceCategories { get; set; }
+
+    /// <summary>Physical seats within halls.</summary>
     public DbSet<SeatEntity> Seats { get; set; }
+
+    /// <summary>Scheduled movie screenings.</summary>
     public DbSet<SessionEntity> Sessions { get; set; }
+
+    /// <summary>Per-session seat bookings.</summary>
     public DbSet<SessionSeatEntity> SessionSeats { get; set; }
 
+    /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("base_schema");

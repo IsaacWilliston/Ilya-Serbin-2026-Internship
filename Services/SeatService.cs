@@ -5,8 +5,10 @@ using SeatsReservationDotNet.Entities;
 
 namespace SeatsReservationDotNet.Services;
 
+/// <inheritdoc cref="ISeatService"/>
 public class SeatService(AppDbContext context) : ISeatService
 {
+    /// <inheritdoc/>
     public async Task<GetSeatDto> CreatePlaceAsync(SaveSeatDto dto)
     {
         var entity = new SeatEntity
@@ -24,6 +26,7 @@ public class SeatService(AppDbContext context) : ISeatService
         return MapToDto(entity);
     }
 
+    /// <inheritdoc/>
     public async Task<PagedResult<GetSeatDto>> GetAllPlacesAsync(int page, int size)
     {
         var query = context.Seats.AsNoTracking();
@@ -37,6 +40,7 @@ public class SeatService(AppDbContext context) : ISeatService
         return new PagedResult<GetSeatDto>(items, total, page, size);
     }
 
+    /// <inheritdoc/>
     public async Task<GetSeatDto> GetPlaceAsync(long id)
     {
         var entity = await context.Seats.AsNoTracking().FirstOrDefaultAsync(s => s.Id == id)
@@ -44,6 +48,7 @@ public class SeatService(AppDbContext context) : ISeatService
         return MapToDto(entity);
     }
 
+    /// <inheritdoc/>
     public async Task<GetSeatDto> UpdatePlaceAsync(long id, SaveSeatDto dto)
     {
         var entity = await context.Seats.FindAsync(id)
@@ -57,6 +62,7 @@ public class SeatService(AppDbContext context) : ISeatService
         return MapToDto(entity);
     }
 
+    /// <inheritdoc/>
     public async Task DeletePlaceAsync(long id)
     {
         var entity = await context.Seats.FindAsync(id)
