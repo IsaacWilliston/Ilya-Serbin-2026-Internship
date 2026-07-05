@@ -23,8 +23,13 @@ var csBuilder = new NpgsqlConnectionStringBuilder
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(csBuilder.ConnectionString));
 
+builder.Services.AddScoped<ICinemaService, CinemaService>();
+builder.Services.AddScoped<IHallService, HallService>();
+builder.Services.AddScoped<IMovieService, MovieService>();
+builder.Services.AddScoped<IPriceCategoryService, PriceCategoryService>();
 builder.Services.AddScoped<ISeatService, SeatService>();
 builder.Services.AddScoped<ISessionService, SessionService>();
+builder.Services.AddScoped<ISessionSeatService, SessionSeatService>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(opts =>
