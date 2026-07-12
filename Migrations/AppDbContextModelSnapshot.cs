@@ -18,7 +18,7 @@ namespace SeatsReservationDotNet.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("base_schema")
-                .HasAnnotation("ProductVersion", "9.0.6")
+                .HasAnnotation("ProductVersion", "9.0.17")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -317,6 +317,41 @@ namespace SeatsReservationDotNet.Migrations
                         .HasDatabaseName("idx_session_seats_session_id");
 
                     b.ToTable("session_seats", "base_schema");
+                });
+
+            modelBuilder.Entity("SeatsReservationDotNet.Entities.UserEntity", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("email");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("password_hash");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("role");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasDatabaseName("idx_users_email");
+
+                    b.ToTable("users", "base_schema");
                 });
 
             modelBuilder.Entity("SeatsReservationDotNet.Entities.HallEntity", b =>

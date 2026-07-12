@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SeatsReservationDotNet.DTOs;
 using SeatsReservationDotNet.Services;
@@ -9,6 +10,7 @@ namespace SeatsReservationDotNet.Controllers;
 /// </summary>
 [ApiController]
 [Route("movies")]
+[Authorize(Roles = "ADMIN")]
 public class MovieController(IMovieService movieService) : ControllerBase
 {
     private const int DefaultPageSize = 20;
@@ -32,6 +34,7 @@ public class MovieController(IMovieService movieService) : ControllerBase
     /// <param name="size">Number of items per page.</param>
     [HttpGet]
     [ProducesResponseType<PagedResult<GetMovieDto>>(StatusCodes.Status200OK)]
+    [AllowAnonymous]
     public async Task<PagedResult<GetMovieDto>> GetAllMovies(
         [FromQuery] int page = 0,
         [FromQuery] int size = DefaultPageSize)
@@ -43,6 +46,7 @@ public class MovieController(IMovieService movieService) : ControllerBase
     [HttpGet("{id:long}")]
     [ProducesResponseType<GetMovieDto>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [AllowAnonymous]
     public async Task<GetMovieDto> GetMovie(long id)
         => await movieService.GetMovieAsync(id);
 

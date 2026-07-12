@@ -32,6 +32,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     /// <summary>Per-session seat bookings.</summary>
     public DbSet<SessionSeatEntity> SessionSeats { get; set; }
+    
+    public DbSet<UserEntity> Users { get; set; }
 
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -105,6 +107,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         modelBuilder.Entity<SessionSeatEntity>()
             .Property(ss => ss.Status).HasConversion<string>();
+        
+        modelBuilder.Entity<UserEntity>()
+            .Property(u => u.Role).HasConversion<string>();
 
         // Indexes matching the SQL schema
         modelBuilder.Entity<HallEntity>()
@@ -123,5 +128,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasIndex(ss => ss.SessionId).HasDatabaseName("idx_session_seats_session_id");
         modelBuilder.Entity<SessionSeatEntity>()
             .HasIndex(ss => ss.SeatId).HasDatabaseName("idx_session_seats_seat_id");
+        
+        modelBuilder.Entity<UserEntity>()
+            .HasIndex(u => u.Email)
+            .HasDatabaseName("idx_users_email")
+            .IsUnique(); 
     }
 }

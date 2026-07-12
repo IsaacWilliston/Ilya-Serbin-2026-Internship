@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SeatsReservationDotNet.DTOs;
 using SeatsReservationDotNet.Services;
@@ -9,6 +10,7 @@ namespace SeatsReservationDotNet.Controllers;
 /// </summary>
 [ApiController]
 [Route("price-categories")]
+[Authorize(Roles = "ADMIN")]
 public class PriceCategoryController(IPriceCategoryService priceCategoryService) : ControllerBase
 {
     private const int DefaultPageSize = 20;
@@ -32,6 +34,7 @@ public class PriceCategoryController(IPriceCategoryService priceCategoryService)
     /// <param name="size">Number of items per page.</param>
     [HttpGet]
     [ProducesResponseType<PagedResult<GetPriceCategoryDto>>(StatusCodes.Status200OK)]
+    [AllowAnonymous]
     public async Task<PagedResult<GetPriceCategoryDto>> GetAllPriceCategories(
         [FromQuery] int page = 0,
         [FromQuery] int size = DefaultPageSize)
@@ -43,6 +46,7 @@ public class PriceCategoryController(IPriceCategoryService priceCategoryService)
     [HttpGet("{id:long}")]
     [ProducesResponseType<GetPriceCategoryDto>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [AllowAnonymous]
     public async Task<GetPriceCategoryDto> GetPriceCategory(long id)
         => await priceCategoryService.GetPriceCategoryAsync(id);
 

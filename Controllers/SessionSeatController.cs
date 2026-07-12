@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SeatsReservationDotNet.DTOs;
 using SeatsReservationDotNet.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SeatsReservationDotNet.Controllers;
 
@@ -23,6 +24,7 @@ public class SessionSeatController(ISessionSeatService sessionSeatService) : Con
     [ProducesResponseType<GetSessionSeatDto>(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize]
     public async Task<IActionResult> CreateSessionSeat([FromBody] SaveSessionSeatDto dto)
     {
         var result = await sessionSeatService.CreateSessionSeatAsync(dto);
@@ -34,6 +36,7 @@ public class SessionSeatController(ISessionSeatService sessionSeatService) : Con
     /// <param name="size">Number of items per page.</param>
     [HttpGet]
     [ProducesResponseType<PagedResult<GetSessionSeatDto>>(StatusCodes.Status200OK)]
+    [Authorize(Roles = "ADMIN")]
     public async Task<PagedResult<GetSessionSeatDto>> GetAllSessionSeats(
         [FromQuery] int page = 0,
         [FromQuery] int size = DefaultPageSize)
@@ -45,6 +48,7 @@ public class SessionSeatController(ISessionSeatService sessionSeatService) : Con
     [HttpGet("{id:long}")]
     [ProducesResponseType<GetSessionSeatDto>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = "ADMIN")]
     public async Task<GetSessionSeatDto> GetSessionSeat(long id)
         => await sessionSeatService.GetSessionSeatAsync(id);
 
@@ -56,6 +60,7 @@ public class SessionSeatController(ISessionSeatService sessionSeatService) : Con
     [ProducesResponseType<GetSessionSeatDto>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = "ADMIN")]
     public async Task<GetSessionSeatDto> UpdateSessionSeat(long id, [FromBody] SaveSessionSeatDto dto)
         => await sessionSeatService.UpdateSessionSeatAsync(id, dto);
 
@@ -66,6 +71,7 @@ public class SessionSeatController(ISessionSeatService sessionSeatService) : Con
     [HttpDelete("{id:long}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> DeleteSessionSeat(long id)
     {
         await sessionSeatService.DeleteSessionSeatAsync(id);

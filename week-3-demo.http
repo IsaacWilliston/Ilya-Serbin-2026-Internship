@@ -1,0 +1,86 @@
+@baseUrl = http://localhost:55134
+
+### 1. Register a new customer account
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "customer@test.com",
+  "password": "Password123!"
+}
+
+### 2. Try registering the same email again -> expect 409 Conflict
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "customer@test.com",
+  "password": "Password123!"
+}
+
+### 3. Login as the customer
+# @name customerLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "customer@test.com",
+  "password": "Password123!"
+}
+
+### 4. Wrong password -> expect 401 Unauthorized
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "customer@test.com",
+  "password": "WrongPassword!"
+}
+
+### 5. Public read endpoint — no token needed -> expect 200 OK
+GET {{baseUrl}}/cinemas
+
+### 6. Admin-only action with NO token at all -> expect 401 Unauthorized
+POST {{baseUrl}}/cinemas
+Content-Type: application/json
+
+{
+  "name": "Demo Cinema",
+  "address": "123 Main St",
+  "city": "Tashkent"
+}
+
+### 7. Admin-only action with a CUSTOMER token -> expect 403 Forbidden
+POST {{baseUrl}}/cinemas
+Authorization: Bearer {{customerLogin.response.body.token}}
+Content-Type: application/json
+
+{
+  "name": "Demo Cinema",
+  "address": "123 Main St",
+  "city": "Tashkent"
+}
+
+### 8. Login as admin (run AFTER manually promoting admin@test.com in Postgres)
+# @name adminLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@test.com",
+  "password": "Password123!"
+}
+
+### 9. Same admin-only action with an ADMIN token -> expect 201 Created
+POST {{baseUrl}}/cinemas
+Authorization: Bearer {{adminLogin.response.body.token}}
+Content-Type: application/json
+
+{
+  "name": "Demo Cinema",
+  "address": "123 Main St",
+  "city": "Tashkent"
+}
+
+### 10. Confirm it's now visible via the public read endpoint
+GET {{baseUrl}}/cinemas

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SeatsReservationDotNet.DTOs;
 using SeatsReservationDotNet.Services;
@@ -9,6 +10,7 @@ namespace SeatsReservationDotNet.Controllers;
 /// </summary>
 [ApiController]
 [Route("sessions")]
+[Authorize(Roles = "ADMIN")]
 public class SessionController(ISessionService sessionService) : ControllerBase
 {
     private const int DefaultPageSize = 20;
@@ -32,6 +34,7 @@ public class SessionController(ISessionService sessionService) : ControllerBase
     /// <param name="size">Number of items per page.</param>
     [HttpGet]
     [ProducesResponseType<PagedResult<GetSessionDto>>(StatusCodes.Status200OK)]
+    [AllowAnonymous]
     public async Task<PagedResult<GetSessionDto>> GetAllSessions(
         [FromQuery] int page = 0,
         [FromQuery] int size = DefaultPageSize)
@@ -43,6 +46,7 @@ public class SessionController(ISessionService sessionService) : ControllerBase
     [HttpGet("{id:long}")]
     [ProducesResponseType<GetSessionDto>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [AllowAnonymous]
     public async Task<GetSessionDto> GetSession(long id)
         => await sessionService.GetSessionAsync(id);
 

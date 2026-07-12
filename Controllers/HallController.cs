@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SeatsReservationDotNet.DTOs;
 using SeatsReservationDotNet.Services;
@@ -9,6 +10,7 @@ namespace SeatsReservationDotNet.Controllers;
 /// </summary>
 [ApiController]
 [Route("halls")]
+[Authorize(Roles = "ADMIN")]
 public class HallController(IHallService hallService) : ControllerBase
 {
     private const int DefaultPageSize = 20;
@@ -34,6 +36,7 @@ public class HallController(IHallService hallService) : ControllerBase
     /// <param name="size">Number of items per page.</param>
     [HttpGet]
     [ProducesResponseType<PagedResult<GetHallDto>>(StatusCodes.Status200OK)]
+    [AllowAnonymous]
     public async Task<PagedResult<GetHallDto>> GetAllHalls(
         [FromQuery] int page = 0,
         [FromQuery] int size = DefaultPageSize)
@@ -45,6 +48,7 @@ public class HallController(IHallService hallService) : ControllerBase
     [HttpGet("{id:long}")]
     [ProducesResponseType<GetHallDto>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [AllowAnonymous]
     public async Task<GetHallDto> GetHall(long id)
         => await hallService.GetHallAsync(id);
 

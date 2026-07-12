@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SeatsReservationDotNet.DTOs;
 using SeatsReservationDotNet.Services;
@@ -9,6 +10,7 @@ namespace SeatsReservationDotNet.Controllers;
 /// </summary>
 [ApiController]
 [Route("places")]
+[Authorize(Roles = "ADMIN")]
 public class SeatController(ISeatService seatService) : ControllerBase
 {
     private const int DefaultPageSize = 20;
@@ -32,6 +34,7 @@ public class SeatController(ISeatService seatService) : ControllerBase
     /// <param name="size">Number of items per page.</param>
     [HttpGet]
     [ProducesResponseType<PagedResult<GetSeatDto>>(StatusCodes.Status200OK)]
+    [AllowAnonymous]
     public async Task<PagedResult<GetSeatDto>> GetAllPlaces(
         [FromQuery] int page = 0,
         [FromQuery] int size = DefaultPageSize)
@@ -43,6 +46,7 @@ public class SeatController(ISeatService seatService) : ControllerBase
     [HttpGet("{id:long}")]
     [ProducesResponseType<GetSeatDto>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [AllowAnonymous]
     public async Task<GetSeatDto> GetPlace(long id)
         => await seatService.GetPlaceAsync(id);
 

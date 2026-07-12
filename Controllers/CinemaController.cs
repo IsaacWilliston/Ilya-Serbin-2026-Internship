@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SeatsReservationDotNet.DTOs;
 using SeatsReservationDotNet.Services;
@@ -9,6 +10,7 @@ namespace SeatsReservationDotNet.Controllers;
 /// </summary>
 [ApiController]
 [Route("cinemas")]
+[Authorize(Roles = "ADMIN")]
 public class CinemaController(ICinemaService cinemaService) : ControllerBase
 {
     private const int DefaultPageSize = 20;
@@ -32,6 +34,7 @@ public class CinemaController(ICinemaService cinemaService) : ControllerBase
     /// <param name="size">Number of items per page.</param>
     [HttpGet]
     [ProducesResponseType<PagedResult<GetCinemaDto>>(StatusCodes.Status200OK)]
+    [AllowAnonymous]
     public async Task<PagedResult<GetCinemaDto>> GetAllCinemas(
         [FromQuery] int page = 0,
         [FromQuery] int size = DefaultPageSize)
@@ -43,6 +46,7 @@ public class CinemaController(ICinemaService cinemaService) : ControllerBase
     [HttpGet("{id:long}")]
     [ProducesResponseType<GetCinemaDto>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [AllowAnonymous]
     public async Task<GetCinemaDto> GetCinema(long id)
         => await cinemaService.GetCinemaAsync(id);
 
