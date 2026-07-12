@@ -7,7 +7,7 @@ namespace SeatsReservationDotNet.Controllers;
 
 [ApiController]
 [Route("auth")]
-[AllowAnonymous] // Ensures registration and logins are explicitly exposed
+[AllowAnonymous]
 public class AuthController(IAuthService authService) : ControllerBase
 {
     [HttpPost("register")]
