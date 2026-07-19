@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SeatsReservationDotNet.DTOs;
+using SeatsReservationDotNet.Enums;
 using SeatsReservationDotNet.Services;
 
 namespace SeatsReservationDotNet.Controllers;
@@ -28,6 +29,23 @@ public class MovieController(IMovieService movieService) : ControllerBase
         var result = await movieService.CreateMovieAsync(dto);
         return CreatedAtAction(nameof(GetMovie), new { id = result.Id }, result);
     }
+
+    /// <summary>Searches movies by optional filters.</summary>
+    /// <param name="title">Case-insensitive partial title match.</param>
+    /// <param name="genre">Genre the movie must belong to.</param>
+    /// <param name="year">Exact release year.</param>
+    /// <param name="page">Zero-based page index.</param>
+    /// <param name="size">Number of items per page.</param>
+    [HttpGet("search")]
+    [ProducesResponseType<PagedResult<GetMovieDto>>(StatusCodes.Status200OK)]
+    [AllowAnonymous]
+    public async Task<PagedResult<GetMovieDto>> SearchMovies(
+        [FromQuery] string? title = null,
+        [FromQuery] Genre? genre = null,
+        [FromQuery] int? year = null,
+        [FromQuery] int page = 0,
+        [FromQuery] int size = DefaultPageSize)
+        => await movieService.SearchMoviesAsync(title, genre, year, page, size);
 
     /// <summary>Returns a paginated list of all movies.</summary>
     /// <param name="page">Zero-based page index.</param>

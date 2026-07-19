@@ -1,0 +1,33 @@
+@baseUrl = http://localhost:55134
+
+### 1. GET /movies (no params) — expect 200 OK and a PagedResult<GetMovieDto>
+# @name getAllMovies
+GET {{baseUrl}}/movies
+
+### 2. GET /movies/search with no params — expect same shape/content as GET /movies (page=0, size=20)
+# Compare this response body with {{getAllMovies.response.body}}
+# @name searchNoParams
+GET {{baseUrl}}/movies/search
+
+### 3. GET /movies/search?genre= — filters by a single valid genre
+# Use any valid enum from SeatsReservationDotNet.Enums.Genre, e.g. ACTION, DRAMA, COMEDY, SCI_FI, etc.
+# Expect 200 OK and that all returned movies include the specified genre
+# @name searchByGenre
+GET {{baseUrl}}/movies/search?genre=ACTION
+
+### 4. GET /movies/search?year= — filters by exact release year
+# Replace 2023 with a year that exists in your dataset if needed
+# Expect 200 OK and that all returned movies have releaseYear == 2023
+# @name searchByYear
+GET {{baseUrl}}/movies/search?year=2023
+
+### 5. GET /movies/search with title + genre + year combined — AND semantics
+# Replace title and/or year to match data as needed.
+# Expect 200 OK and that results satisfy ALL filters simultaneously
+# @name searchCombined
+GET {{baseUrl}}/movies/search?title=man&genre=ACTION&year=2023
+
+### 6. GET /movies/search?genre= with an invalid value — expect 400 Bad Request
+# Depending on model binding, invalid enum should produce 400.
+# @name searchInvalidGenre
+GET {{baseUrl}}/movies/search?genre=NOT_A_REAL_GENRE

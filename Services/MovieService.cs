@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SeatsReservationDotNet.Data;
 using SeatsReservationDotNet.DTOs;
 using SeatsReservationDotNet.Entities;
+using SeatsReservationDotNet.Enums;
 
 namespace SeatsReservationDotNet.Services;
 
@@ -90,6 +91,25 @@ public class MovieService(AppDbContext context) : IMovieService
             ?? throw new KeyNotFoundException($"Movie with id {id} not found");
         context.Movies.Remove(entity);
         await context.SaveChangesAsync();
+    }
+
+    /// <inheritdoc/>
+    public async Task<PagedResult<GetMovieDto>> SearchMoviesAsync(string? title, Genre? genre, int? year, int page, int size)
+    {
+        var query = context.Movies.AsNoTracking().Include(m => m.Genres).AsQueryable();
+        if (title is not null)
+            query = query.Where(m => EF.Functions.ILike(m.Title!, $"%{title}%"));
+        if (genre is not null)
+            query = query.Where(m => m.Genres.Any(g => g.Genre == genre.Value));
+        if (year is not null)
+            query = query.Where(m => m.ReleaseYear == year);
+        var total = await query.CountAsync();
+        var items = await query
+            .OrderBy(m => m.Title)
+            .Skip(page * size)
+            .Take(size)
+            .ToListAsync();
+        return new PagedResult<GetMovieDto>(items.Select(MapToDto).ToList(), total, page, size);
     }
 
     private static GetMovieDto MapToDto(MovieEntity e) => new()

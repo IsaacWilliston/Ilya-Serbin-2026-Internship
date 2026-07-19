@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Movies</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: #111;
+      color: #eee;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    header {
+      max-width: 900px;
+      margin: 0 auto 2rem;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      color: #fff;
+    }
+
+    .search-bar {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .search-bar input {
+      flex: 1;
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      border: 1px solid #444;
+      background: #222;
+      color: #eee;
+      font-size: 1rem;
+    }
+
+    .search-bar input:focus {
+      outline: none;
+      border-color: #e50914;
+    }
+
+    .search-bar button {
+      padding: 0.6rem 1.4rem;
+      border-radius: 6px;
+      border: none;
+      background: #e50914;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .search-bar button:hover { background: #b0060f; }
+    .search-bar button:disabled { background: #555; cursor: not-allowed; }
+
+    #status {
+      max-width: 900px;
+      margin: 0 auto 1.5rem;
+      font-size: 0.95rem;
+      min-height: 1.4rem;
+    }
+
+    #status.error { color: #ff6b6b; }
+    #status.loading { color: #aaa; }
+
+    .grid {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1.2rem;
+    }
+
+    .card {
+      background: #1c1c1c;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.15s;
+    }
+
+    .card:hover { transform: translateY(-3px); }
+
+    .poster {
+      width: 100%;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+      display: block;
+      background: #2a2a2a;
+    }
+
+    .poster-placeholder {
+      width: 100%;
+      aspect-ratio: 2/3;
+      background: #2a2a2a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #555;
+      font-size: 2.5rem;
+    }
+
+    .card-body {
+      padding: 0.75rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.3;
+    }
+
+    .card-meta {
+      font-size: 0.8rem;
+      color: #999;
+    }
+
+    .card-rating {
+      margin-top: auto;
+      font-size: 0.85rem;
+      color: #f5c518;
+      font-weight: 600;
+    }
+
+    .empty {
+      max-width: 900px;
+      margin: 2rem auto;
+      color: #666;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🎬 Movies</h1>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search by title…" />
+      <button id="searchBtn">Search</button>
+    </div>
+  </header>
+
+  <div id="status"></div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" hidden>No movies found.</div>
+
+  <script>
+    const BASE = 'http://localhost:55134';
+
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn   = document.getElementById('searchBtn');
+    const statusEl    = document.getElementById('status');
+    const gridEl      = document.getElementById('grid');
+    const emptyEl     = document.getElementById('empty');
+
+    function setStatus(msg, type = '') {
+      statusEl.textContent = msg;
+      statusEl.className = type;
+    }
+
+    function renderPoster(url, title) {
+      if (url) {
+        const img = document.createElement('img');
+        img.className = 'poster';
+        img.src = url;
+        img.alt = title || 'Movie poster';
+        img.onerror = () => img.replaceWith(makePlaceholder());
+        return img;
+      }
+      return makePlaceholder();
+    }
+
+    function makePlaceholder() {
+      const div = document.createElement('div');
+      div.className = 'poster-placeholder';
+      div.textContent = '🎞';
+      return div;
+    }
+
+    function renderCard(movie) {
+      const title      = movie.title       || '—';
+      const year       = movie.releaseYear != null ? movie.releaseYear : '—';
+      const ageRating  = movie.ageRating   || '—';
+      const rating     = movie.rating      != null ? `⭐ ${movie.rating.toFixed(1)}` : '—';
+
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      card.appendChild(renderPoster(movie.posterUrl, title));
+
+      const body = document.createElement('div');
+      body.className = 'card-body';
+
+      const titleEl = document.createElement('div');
+      titleEl.className = 'card-title';
+      titleEl.textContent = title;
+
+      const metaEl = document.createElement('div');
+      metaEl.className = 'card-meta';
+      metaEl.textContent = `${year} · ${ageRating}`;
+
+      const ratingEl = document.createElement('div');
+      ratingEl.className = 'card-rating';
+      ratingEl.textContent = rating;
+
+      body.appendChild(titleEl);
+      body.appendChild(metaEl);
+      body.appendChild(ratingEl);
+      card.appendChild(body);
+
+      return card;
+    }
+
+    async function fetchMovies() {
+      const title = searchInput.value.trim();
+      const url = new URL(`${BASE}/movies/search`);
+      if (title) url.searchParams.set('title', title);
+
+      searchBtn.disabled = true;
+      setStatus('Loading…', 'loading');
+      gridEl.innerHTML = '';
+      emptyEl.hidden = true;
+
+      try {
+        const res = await fetch(url.toString());
+        if (!res.ok) throw new Error(`Server returned ${res.status}`);
+        const data = await res.json();
+        const movies = data.content ?? [];
+
+        setStatus('');
+        if (movies.length === 0) {
+          emptyEl.hidden = false;
+        } else {
+          movies.forEach(m => gridEl.appendChild(renderCard(m)));
+        }
+      } catch (err) {
+        setStatus(`Error: ${err.message}`, 'error');
+      } finally {
+        searchBtn.disabled = false;
+      }
+    }
+
+    searchBtn.addEventListener('click', fetchMovies);
+    searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') fetchMovies(); });
+
+    fetchMovies();
+  </script>
+</body>
+</html>
