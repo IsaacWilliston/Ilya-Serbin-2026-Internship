@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
@@ -12,7 +13,16 @@ using SeatsReservationDotNet.Data;
 using SeatsReservationDotNet.Entities;
 using SeatsReservationDotNet.Services;
 
+// Load .env variables before builder initializes
+DotNetEnv.Env.TraversePath().Load();
+
 var builder = WebApplication.CreateBuilder(args);
+
+var envPath = Path.Combine(builder.Environment.ContentRootPath, ".env");
+if (File.Exists(envPath))
+{
+    DotNetEnv.Env.Load(envPath);
+}
 
 // Database configuration
 var dbConfig = builder.Configuration.GetSection("Database");
@@ -59,6 +69,9 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    // FORCE .NET 9 to use JwtSecurityTokenHandler (matches TokenService)
+    options.UseSecurityTokenValidators = true;
+    
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -68,7 +81,15 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
-        ClockSkew = TimeSpan.Zero
+        ClockSkew = TimeSpan.Zero,
+    };
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            Console.WriteLine($"JWT FAILED: {context.Exception.GetType().Name}: {context.Exception.Message}");
+            return Task.CompletedTask;
+        }
     };
 });
 
@@ -109,9 +130,31 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+var allowedOrigins = Environment.GetEnvironmentVariable("CORS_ALLOWED_ORIGINS")?.Split(',')
+                     ?? builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+                     ?? new[] { "http://localhost:3000", "http://localhost:5173" };
+
 builder.Services.AddCors(options =>
-    options.AddDefaultPolicy(policy =>
-        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
+    options.AddPolicy("StrictCorsPolicy", policy =>
+    {
+        policy.WithOrigins(allowedOrigins)
+            .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+            .WithHeaders("Authorization", "Content-Type", "Accept")
+            .AllowCredentials();
+    }));
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("login", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? context.Request.Headers.Host.ToString(),
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(2),
+                QueueLimit = 0
+            }));
+});
 
 var app = builder.Build();
 
@@ -138,11 +181,13 @@ app.UseExceptionHandler(errorApp =>
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseCors();
+app.UseCors("StrictCorsPolicy");
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseRateLimiter();
 
 app.MapControllers();
 

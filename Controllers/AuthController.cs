@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using SeatsReservationDotNet.DTOs;
 using SeatsReservationDotNet.Services;
 
@@ -19,6 +20,7 @@ public class AuthController(IAuthService authService) : ControllerBase
         return Created("", result);
     }
 
+    [EnableRateLimiting("login")]
     [HttpPost("login")]
     [ProducesResponseType<AuthResponseDto>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

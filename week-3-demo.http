@@ -1,5 +1,3 @@
-@baseUrl = http://localhost:55134
-
 ### 1. Register a new customer account
 POST {{baseUrl}}/auth/register
 Content-Type: application/json
@@ -52,7 +50,7 @@ Content-Type: application/json
 
 ### 7. Admin-only action with a CUSTOMER token -> expect 403 Forbidden
 POST {{baseUrl}}/cinemas
-Authorization: Bearer {{customerLogin.response.body.token}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1IiwiZW1haWwiOiJjdXN0b21lckB0ZXN0LmNvbSIsInJvbGUiOiJDVVNUT01FUiIsImV4cCI6MTc4NDcxNjg3MywiaXNzIjoiU2VhdHNSZXNlcnZhdGlvbkJhY2tlbmQiLCJhdWQiOiJTZWF0c1Jlc2VydmF0aW9uQ2xpZW50cyJ9.3-iCqPle6NrVW09vOlY5cP4GLLTuRjLk26QbwjSnfm4
 Content-Type: application/json
 
 {
@@ -62,24 +60,27 @@ Content-Type: application/json
 }
 
 ### 8. Login as admin (run AFTER manually promoting admin@test.com in Postgres)
-# @name adminLogin
-POST {{baseUrl}}/auth/login
+POST http://localhost:55134/auth/login
 Content-Type: application/json
 
 {
   "email": "admin@test.com",
-  "password": "Password123!"
+  "password": "@dmin-Password123!"
 }
 
+> {%
+    client.global.set("adminToken", response.body.token);
+%}
+
 ### 9. Same admin-only action with an ADMIN token -> expect 201 Created
-POST {{baseUrl}}/cinemas
-Authorization: Bearer {{adminLogin.response.body.token}}
+POST http://localhost:55134/cinemas
+Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
-  "name": "Demo Cinema",
-  "address": "123 Main St",
-  "city": "Tashkent"
+  "name": "Testing Cinema",
+  "address": "987 Main Street",
+  "city": "Samarkand"
 }
 
 ### 10. Confirm it's now visible via the public read endpoint
